@@ -13,6 +13,8 @@ const TeamDetails = () => {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [socket, setSocket] = useState(null);
+  const [suggestedMembers, setSuggestedMembers] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   useEffect(() => {
     fetchTeam();
@@ -34,6 +36,13 @@ const TeamDetails = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (team && user && (team.leader?._id === user.id || team.leader === user.id)) {
+      fetchSuggestedMembers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [team, user]);
+
   const fetchTeam = async () => {
     try {
       setLoading(true);
@@ -43,6 +52,18 @@ const TeamDetails = () => {
       console.error('Error fetching team:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSuggestedMembers = async () => {
+    try {
+      setSuggestionsLoading(true);
+      const response = await api.get(`/teams/${id}/member-suggestions`);
+      setSuggestedMembers(response.data);
+    } catch (error) {
+      console.error('Error fetching suggested members:', error);
+    } finally {
+      setSuggestionsLoading(false);
     }
   };
 
@@ -168,15 +189,28 @@ const TeamDetails = () => {
         </div>
 
         <div>
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Team Members</h2>
             <div className="space-y-4">
               <div className="border-b pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">
-                      {typeof team.leader === 'object' ? team.leader.name : 'Leader'}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold">
+                        {typeof team.leader === 'object' ? team.leader.name : 'Leader'}
+                      </p>
+                      <Link
+                        to={
+                          typeof team.leader === 'object'
+                            ? `/users/${team.leader._id}`
+                            : `/users/${team.leader}`
+                        }
+                        className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50 px-2 py-0.5 text-[11px] font-medium text-primary-700 hover:bg-primary-100"
+                      >
+                        <FiUser className="h-3 w-3" />
+                        <span>View profile</span>
+                      </Link>
+                    </div>
                     <p className="text-sm text-gray-600">Team Leader</p>
                   </div>
                   {isLeader && (
@@ -190,9 +224,22 @@ const TeamDetails = () => {
                 <div key={idx} className="border-b pb-4 last:border-0">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-semibold">
-                        {typeof member.user === 'object' ? member.user.name : 'Member'}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">
+                          {typeof member.user === 'object' ? member.user.name : 'Member'}
+                        </p>
+                        <Link
+                          to={
+                            typeof member.user === 'object'
+                              ? `/users/${member.user._id}`
+                              : `/users/${member.user}`
+                          }
+                          className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50 px-2 py-0.5 text-[11px] font-medium text-primary-700 hover:bg-primary-100"
+                        >
+                          <FiUser className="h-3 w-3" />
+                          <span>View profile</span>
+                        </Link>
+                      </div>
                       <p className="text-sm text-gray-600 capitalize">{member.role}</p>
                     </div>
                     {(member.user?._id === user?.id || member.user === user?.id) && (
@@ -220,6 +267,61 @@ const TeamDetails = () => {
               </button>
             )}
           </div>
+
+          {isLeader && (
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Suggested Members</h2>
+                <button
+                  onClick={fetchSuggestedMembers}
+                  className="text-sm px-3 py-1 bg-primary-100 text-primary-800 rounded-md hover:bg-primary-200"
+                >
+                  Refresh
+                </button>
+              </div>
+              {suggestionsLoading ? (
+                <p className="text-gray-500">Loading suggestions...</p>
+              ) : suggestedMembers.length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  No suggested members yet. Make sure your team "Looking For" skills are filled and participants have skills in their profiles.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {suggestedMembers.map((member) => (
+                    <div key={member._id} className="border-b pb-3 last:border-0">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{member.name}</p>
+                            <Link
+                              to={`/users/${member._id}`}
+                              className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50 px-2 py-0.5 text-[11px] font-medium text-primary-700 hover:bg-primary-100"
+                            >
+                              <FiUser className="h-3 w-3" />
+                              <span>View profile</span>
+                            </Link>
+                          </div>
+                          <p className="text-sm text-gray-600">{member.email}</p>
+                          {member.profile?.skills?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {member.profile.skills.slice(0, 5).map((skill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="bg-primary-100 text-primary-800 px-2 py-0.5 rounded text-xs"
+                                >
+                                  {skill.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

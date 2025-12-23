@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
-import { FiCalendar, FiMapPin, FiUsers, FiClock, FiSearch } from 'react-icons/fi';
-import { format } from 'date-fns';
+import { useMemo } from 'react';
+import FilterBar from '../components/FilterBar';
+import HackathonCard from '../components/HackathonCard';
+import HackathonCardSkeleton from '../components/HackathonCardSkeleton';
 
 const StudentDashboard = () => {
   const [hackathons, setHackathons] = useState([]);
@@ -13,6 +15,17 @@ const StudentDashboard = () => {
     location: '',
     date: '',
   });
+
+  const currentUserId = useMemo(
+    () => JSON.parse(localStorage.getItem('user'))?.id,
+    []
+  );
+
+  const totalHackathons = hackathons.length;
+  const upcomingHackathons = hackathons.filter(h => h.status === 'upcoming').length;
+  const registeredHackathons = hackathons.filter(h =>
+    h.participants?.some(p => p._id === currentUserId)
+  ).length;
 
   useEffect(() => {
     fetchHackathons();
@@ -58,136 +71,93 @@ const StudentDashboard = () => {
     'Other',
   ];
 
+  const handleApplyFilters = () => {
+    fetchHackathons();
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Hackathon Dashboard</h1>
-        <p className="text-gray-600">Discover and join exciting hackathons</p>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page header */}
+      <section className="pt-2 sm:pt-4 pb-4">
+        <div className="rounded-2xl bg-gradient-to-r from-primary-50 via-sky-50 to-indigo-50 px-5 py-5 sm:px-8 sm:py-6 border border-slate-100">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-1">
+            Hackathon Dashboard
+          </h1>
+          <p className="text-sm sm:text-base text-slate-600">
+            Discover, register, and collaborate in hackathons that match your skills.
+          </p>
+        </div>
+      </section>
+
+      {/* Summary cards */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-1">Total Hackathons</p>
+          <p className="text-2xl font-semibold text-slate-900">{totalHackathons}</p>
+          <p className="mt-1 text-xs text-slate-500">Visible with current filters</p>
+        </div>
+        <div className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-1">Upcoming</p>
+          <p className="text-2xl font-semibold text-blue-600">{upcomingHackathons}</p>
+          <p className="mt-1 text-xs text-slate-500">Yet to start</p>
+        </div>
+        <div className="rounded-2xl bg-white border border-slate-100 p-4 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500 mb-1">You&apos;re Registered</p>
+          <p className="text-2xl font-semibold text-emerald-600">{registeredHackathons}</p>
+          <p className="mt-1 text-xs text-slate-500">Hackathons you joined</p>
+        </div>
+      </section>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search hackathons..."
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            />
-          </div>
-          <select
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-            value={filters.domain}
-            onChange={(e) => setFilters({ ...filters, domain: e.target.value })}
-          >
-            <option value="">All Domains</option>
-            {domains.map((domain) => (
-              <option key={domain} value={domain}>
-                {domain}
-              </option>
+      <section className="mb-6">
+        <FilterBar
+          filters={filters}
+          domains={domains}
+          onChange={setFilters}
+          onApply={handleApplyFilters}
+        />
+      </section>
+
+      {/* Hackathons list */}
+      <section className="pb-10">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {Array.from({ length: 6 }).map((_, idx) => (
+              <HackathonCardSkeleton key={idx} />
             ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Location..."
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-            value={filters.location}
-            onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-          />
-          <input
-            type="date"
-            className="px-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
-            value={filters.date}
-            onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-          />
-        </div>
-      </div>
-
-      {/* Hackathons List */}
-      {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
-      ) : hackathons.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No hackathons found</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hackathons.map((hackathon) => (
-            <div
-              key={hackathon._id}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-gray-900">{hackathon.title}</h3>
-                  <span className={`px-2 py-1 text-xs font-medium rounded ${
-                    hackathon.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                    hackathon.status === 'ongoing' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {hackathon.status}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{hackathon.description}</p>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <FiMapPin className="mr-2" />
-                    {hackathon.isOnline ? 'Online' : hackathon.location}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <FiCalendar className="mr-2" />
-                    {format(new Date(hackathon.startDate), 'MMM dd, yyyy')} - {format(new Date(hackathon.endDate), 'MMM dd, yyyy')}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <FiUsers className="mr-2" />
-                    {hackathon.participants?.length || 0} participants
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <FiClock className="mr-2" />
-                    Deadline: {format(new Date(hackathon.registrationDeadline), 'MMM dd, yyyy')}
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <span className="inline-block bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded mr-2">
-                    {hackathon.domain}
-                  </span>
-                </div>
-
-                <div className="flex space-x-2">
-                  <Link
-                    to={`/hackathons/${hackathon._id}`}
-                    className="flex-1 text-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition"
-                  >
-                    View Details
-                  </Link>
-                  {hackathon.participants?.some(p => p._id === JSON.parse(localStorage.getItem('user'))?.id) ? (
-                    <button
-                      disabled
-                      className="flex-1 px-4 py-2 bg-gray-300 text-gray-600 rounded-md cursor-not-allowed"
-                    >
-                      Registered
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleRegister(hackathon._id)}
-                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                    >
-                      Register
-                    </button>
-                  )}
-                </div>
-              </div>
+          </div>
+        ) : hackathons.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/60 px-6 py-16 text-center shadow-sm">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 text-primary-600 text-2xl font-semibold">
+              HC
             </div>
-          ))}
-        </div>
-      )}
+            <h2 className="text-lg font-semibold text-slate-900 mb-1">No hackathons found</h2>
+            <p className="text-sm text-slate-500 mb-3 max-w-md">
+              Try adjusting your filters or check back later. New hackathons are added regularly.
+            </p>
+            <button
+              type="button"
+              onClick={() => setFilters({ search: '', domain: '', location: '', date: '' })}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {hackathons.map((hackathon) => (
+              <HackathonCard
+                key={hackathon._id}
+                hackathon={hackathon}
+                variant="student"
+                isRegistered={hackathon.participants?.some((p) => p._id === currentUserId)}
+                onViewDetails={() => (window.location.href = `/hackathons/${hackathon._id}`)}
+                onRegister={() => handleRegister(hackathon._id)}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
-import { FiPlus, FiUsers, FiCalendar, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
+import HackathonCard from '../components/HackathonCard';
+import HackathonCardSkeleton from '../components/HackathonCardSkeleton';
 import { format } from 'date-fns';
 
 const OrganizerDashboard = () => {
@@ -305,68 +307,34 @@ const OrganizerDashboard = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 py-4">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <HackathonCardSkeleton key={idx} />
+          ))}
         </div>
       ) : hackathons.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500 text-lg">No hackathons created yet</p>
+        <div className="text-center py-12 bg-white rounded-lg shadow border border-dashed border-slate-300">
+          <p className="text-gray-800 text-lg font-semibold mb-1">No hackathons created yet</p>
+          <p className="text-gray-500 text-sm">Use the "Create Hackathon" button above to publish your first event.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {hackathons.map((hackathon) => (
-            <div key={hackathon._id} className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">{hackathon.title}</h3>
-                  <p className="text-gray-600 text-sm mt-1">{hackathon.description}</p>
-                </div>
-                <div className="flex space-x-2">
-                  <Link
-                    to={`/hackathons/${hackathon._id}`}
-                    className="p-2 text-primary-600 hover:bg-primary-50 rounded"
-                  >
-                    <FiEdit />
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(hackathon._id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
-                  >
-                    <FiTrash2 />
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <FiUsers className="mr-2" />
-                  {hackathon.participants?.length || 0} participants
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <FiCalendar className="mr-2" />
-                  {format(new Date(hackathon.startDate), 'MMM dd, yyyy')}
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Status: </span>
-                  <span className={`font-medium ${
-                    hackathon.status === 'upcoming' ? 'text-blue-600' :
-                    hackathon.status === 'ongoing' ? 'text-green-600' :
-                    'text-gray-600'
-                  }`}>
-                    {hackathon.status}
-                  </span>
-                </div>
-                <div className="text-sm">
-                  <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded">
-                    {hackathon.domain}
-                  </span>
-                </div>
-              </div>
-              <Link
-                to={`/hackathons/${hackathon._id}`}
-                className="text-primary-600 hover:text-primary-700 font-medium"
+            <div key={hackathon._id} className="relative">
+              <HackathonCard
+                hackathon={hackathon}
+                variant="organizer"
+                onViewDetails={() => (window.location.href = `/hackathons/${hackathon._id}`)}
+                onViewParticipants={() => (window.location.href = `/hackathons/${hackathon._id}#participants`)}
+                onEdit={() => (window.location.href = `/hackathons/${hackathon._id}`)}
+              />
+              <button
+                type="button"
+                onClick={() => handleDelete(hackathon._id)}
+                className="absolute right-3 top-3 rounded-full bg-white/90 p-1.5 text-xs text-red-600 shadow-sm hover:bg-red-50"
               >
-                View Details & Manage →
-              </Link>
+                <FiTrash2 />
+              </button>
             </div>
           ))}
         </div>

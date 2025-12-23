@@ -12,6 +12,7 @@ import Teams from './pages/Teams';
 import TeamDetails from './pages/TeamDetails';
 import Notifications from './pages/Notifications';
 import Home from './pages/Home';
+import UserProfile from './pages/UserProfile';
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -95,6 +96,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <Layout>
               <Profile />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <UserProfile />
             </Layout>
           </ProtectedRoute>
         }

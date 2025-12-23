@@ -181,8 +181,30 @@ const Teams = () => {
                   <FiUsers className="mr-2" />
                   {team.members?.length || 0}/{team.maxSize} members
                 </div>
+
+                {/* Show a short list of team members */}
+                {team.members && team.members.length > 0 && (
+                  <div className="mt-1 space-y-1 text-sm text-gray-700">
+                    {team.members.slice(0, 3).map((member, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span>
+                          {typeof member.user === 'object' ? member.user.name : 'Member'}
+                        </span>
+                        <span className="text-xs text-gray-500 capitalize">
+                          {member.role}
+                        </span>
+                      </div>
+                    ))}
+                    {team.members.length > 3 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        +{team.members.length - 3} more member(s)
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {team.lookingFor?.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {team.lookingFor.map((skill, idx) => (
                       <span
                         key={idx}

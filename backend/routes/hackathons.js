@@ -3,6 +3,8 @@ import { body, validationResult } from 'express-validator';
 import Hackathon from '../models/Hackathon.js';
 import { authenticate, isOrganizer } from '../middleware/auth.js';
 import Notification from '../models/Notification.js';
+import Team from '../models/Team.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
@@ -138,7 +140,7 @@ router.post('/:id/register', authenticate, async (req, res) => {
     hackathon.participants.push(req.user._id);
     await hackathon.save();
 
-    // Create notification
+    // Create notification for the participant
     await Notification.create({
       user: req.user._id,
       type: 'hackathon',
@@ -147,6 +149,43 @@ router.post('/:id/register', authenticate, async (req, res) => {
       relatedId: hackathon._id,
       relatedModel: 'Hackathon'
     });
+
+    // Suggest this participant to team leaders who are looking for matching skills
+    try {
+      const user = await User.findById(req.user._id);
+      const userSkills = user.profile?.skills?.map(s => s.name.toLowerCase()) || [];
+
+      if (userSkills.length > 0) {
+        const teams = await Team.find({ hackathon: hackathon._id });
+
+        const matchingTeams = teams.filter(team => {
+          if (team.members.length >= team.maxSize) return false;
+          if (team.members.some(m => m.user.toString() === req.user._id.toString())) return false;
+
+          const lookingFor = team.lookingFor?.map(s => s.toLowerCase()) || [];
+          if (lookingFor.length === 0) return false;
+
+          return userSkills.some(skill =>
+            lookingFor.some(lf => lf.includes(skill) || skill.includes(lf))
+          );
+        });
+
+        await Promise.all(
+          matchingTeams.map(team =>
+            Notification.create({
+              user: team.leader,
+              type: 'team',
+              title: 'Potential Team Member Match',
+              message: `${user.name} has registered for ${hackathon.title} and matches your required skills for team ${team.name}.`,
+              relatedId: team._id,
+              relatedModel: 'Team'
+            })
+          )
+        );
+      }
+    } catch (matchError) {
+      console.error('Error creating team match notifications:', matchError);
+    }
 
     res.json({ message: 'Registered successfully', hackathon });
   } catch (error) {
