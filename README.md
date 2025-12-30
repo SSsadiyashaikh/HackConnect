@@ -61,7 +61,7 @@ A full-stack hackathon management platform for students and organizers to discov
 1. Navigate to the backend directory:  
    ```bash
    cd backend
-````
+```
 
 2. Install dependencies:
 
