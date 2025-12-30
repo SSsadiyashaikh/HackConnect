@@ -64,18 +64,16 @@ A full-stack hackathon management platform for students and organizers to discov
 ````
 
 2. Install dependencies:
-
    ```
    npm install
-   ```
+```
 3. Create a `.env` file in the backend directory:
-
    ```
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/hackconnect
    JWT_SECRET=your_jwt_secret_key_here
    NODE_ENV=development
-   ```
+```
 4. Start the backend server:
 
    ```
