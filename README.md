@@ -1,6 +1,3 @@
-Perfect! I’ve reformatted your README so it’s clean, readable, and ready for GitHub. You can copy-paste this into your `README.md`:
-
-````markdown
 # HackConnect - Hackathon Dashboard Application
 
 A full-stack hackathon management platform for students and organizers to discover, join, and manage hackathons.
