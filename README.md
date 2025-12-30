@@ -232,5 +232,5 @@ npm start
 
 * `VITE_API_URL` - Backend API URL (default: [http://localhost:5000/api](http://localhost:5000/api))
 
----
+
 
