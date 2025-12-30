@@ -59,18 +59,18 @@ A full-stack hackathon management platform for students and organizers to discov
 
 ### Backend Setup
 1. Navigate to the backend directory:  
-   ```bash
+   ```
    cd backend
 ````
 
 2. Install dependencies:
 
-   ```bash
+   ```
    npm install
    ```
 3. Create a `.env` file in the backend directory:
 
-   ```env
+   ```
    PORT=5000
    MONGODB_URI=mongodb://localhost:27017/hackconnect
    JWT_SECRET=your_jwt_secret_key_here
@@ -78,7 +78,7 @@ A full-stack hackathon management platform for students and organizers to discov
    ```
 4. Start the backend server:
 
-   ```bash
+   ```
    npm run dev
    ```
 
@@ -88,22 +88,22 @@ A full-stack hackathon management platform for students and organizers to discov
 
 1. Navigate to the root directory (HackConnect):
 
-   ```bash
+   ```
    cd ..
    ```
 2. Install dependencies:
 
-   ```bash
+   ```
    npm install
    ```
 3. Create a `.env` file in the root directory (optional):
 
-   ```env
+   ```
    VITE_API_URL=http://localhost:5000/api
    ```
 4. Start the development server:
 
-   ```bash
+   ```
    npm run dev
    ```
 
@@ -192,14 +192,14 @@ HackConnect/
 
 **Backend:**
 
-```bash
+```
 cd backend
 npm run dev
 ```
 
 **Frontend:**
 
-```bash
+```
 npm run dev
 ```
 
@@ -207,13 +207,13 @@ npm run dev
 
 **Frontend:**
 
-```bash
+```
 npm run build
 ```
 
 **Backend:**
 
-```bash
+```
 npm start
 ```
 
