@@ -55,8 +55,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Hackathon not found' });
     }
 
-    hackathon.updateStatus();
-    await hackathon.save();
+    await hackathon.updateStatus();
 
     res.json(hackathon);
   } catch (error) {

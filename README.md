@@ -61,7 +61,7 @@ A full-stack hackathon management platform for students and organizers to discov
 1. Navigate to the backend directory:  
    ```bash
    cd backend
-```
+````
 
 2. Install dependencies:
 
@@ -234,3 +234,14 @@ npm start
 
 
 
+### 🏠 Home Page
+![Home Page](public/screenshots/home.png)
+
+### 🔐 Login Page
+![Login Page](public/screenshots/login.png)
+
+### 📊 Dashboard
+![Dashboard](public/screenshots/dashboard.png)
+
+### 🧑‍🤝‍🧑 Team Page
+![Team Page](public/screenshots/team.png)
