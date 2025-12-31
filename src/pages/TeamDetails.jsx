@@ -280,7 +280,7 @@ const TeamDetails = () => {
                             {typeof msg.user === 'object' ? msg.user.name : 'User'}
                           </span>
                           <span className="text-xs text-gray-500 ml-2">
-                            {format(new Date(msg.timestamp), 'MMM dd, HH:mm')}
+                            {msg.timestamp || msg.createdAt ? format(new Date(msg.timestamp || msg.createdAt), 'MMM dd, HH:mm') : 'Just now'}
                           </span>
                         </div>
                         <p className="text-gray-700">{msg.message}</p>
@@ -313,9 +313,8 @@ const TeamDetails = () => {
         </div>
 
         <div>
-          {isHackathonParticipant && (
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-xl font-semibold mb-4">Team Members</h2>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Team Members</h2>
             <div className="space-y-4">
               <div className="border-b pb-4">
                 <div className="flex items-center justify-between">
@@ -392,7 +391,6 @@ const TeamDetails = () => {
               </button>
             )}
           </div>
-          )}
 
           {isLeader && (
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -488,13 +486,12 @@ const TeamDetails = () => {
                             </div>
                           )}
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full ${
-                              app.status === 'pending'
+                            className={`inline-block px-2 py-0.5 rounded-full ${app.status === 'pending'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : app.status === 'accepted'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            } text-[11px] capitalize`}
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              } text-[11px] capitalize`}
                           >
                             {app.status}
                           </span>
